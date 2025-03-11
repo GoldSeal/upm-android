@@ -20,12 +20,6 @@
  */
 package com.u17od.upm;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.channels.FileChannel;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -46,6 +40,13 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
+
 
 public class FullAccountList extends AccountsList {
 
@@ -175,7 +176,7 @@ public class FullAccountList extends AccountsList {
                 break;
             case R.id.restore:
                 // Check to ensure there's a file to restore
-                File restoreFile = new File(Environment.getExternalStorageDirectory(), Utilities.DEFAULT_DATABASE_FILE);
+                File restoreFile = Utilities.getBackupFile(FullAccountList.this);
                 if (restoreFile.exists()) {
                     showDialog(CONFIRM_RESTORE_DIALOG);
                 } else {
@@ -186,7 +187,7 @@ public class FullAccountList extends AccountsList {
                 break;
             case R.id.backup:
                 // If there's already a backup file prompt the user if they want to overwrite
-                File backupFile = new File(Environment.getExternalStorageDirectory(), Utilities.DEFAULT_DATABASE_FILE);
+                File backupFile = Utilities.getBackupFile(FullAccountList.this);
                 if (backupFile.exists()) {
                     showDialog(CONFIRM_OVERWRITE_BACKUP_FILE);
                 } else {
@@ -251,7 +252,7 @@ public class FullAccountList extends AccountsList {
                });
             break;
         case CONFIRM_OVERWRITE_BACKUP_FILE:
-            File backupFile = new File(Environment.getExternalStorageDirectory(), Utilities.DEFAULT_DATABASE_FILE);
+            File backupFile = Utilities.getBackupFile(FullAccountList.this);
             String messageRes = getString(R.string.backup_file_exists);
             String message = String.format(messageRes, backupFile.getAbsolutePath());
 
@@ -271,16 +272,18 @@ public class FullAccountList extends AccountsList {
         case DIALOG_ABOUT:
             PackageInfo pinfo;
             String versionName = "<unknown>";
+            int versionCode = 0;
             try {
                 pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
                 versionName = pinfo.versionName;
+                versionCode = pinfo.versionCode;
             } catch (NameNotFoundException e) {
                 Log.e("FullAccountList", e.getMessage(), e);
             }
-                       
+
             View v = LayoutInflater.from(this).inflate(R.layout.dialog, null);
             TextView text = (TextView) v.findViewById(R.id.dialogText);
-            text.setText(getString(R.string.aboutText, versionName));
+            text.setText(getString(R.string.aboutText, versionName, versionCode));
 
             dialogBuilder
                 .setTitle(R.string.about)
@@ -348,10 +351,10 @@ public class FullAccountList extends AccountsList {
     }
 
     private void backupDatabase() {
-        File fileOnSDCard = new File(Environment.getExternalStorageDirectory(), Utilities.DEFAULT_DATABASE_FILE);
+        File backupFile = Utilities.getBackupFile(FullAccountList.this);
         File databaseFile = Utilities.getDatabaseFile(this);
-        if (((UPMApplication) getApplication()).copyFile(databaseFile, fileOnSDCard, this)) {
-            String message = String.format(getString(R.string.backup_complete), fileOnSDCard.getAbsolutePath());
+        if (((UPMApplication) getApplication()).copyFile(databaseFile, backupFile, this)) {
+            String message = String.format(getString(R.string.backup_complete), backupFile.getAbsolutePath());
             UIUtilities.showToast(this, message, false);
         }
     }

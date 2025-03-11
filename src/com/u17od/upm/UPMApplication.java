@@ -29,7 +29,7 @@ import java.util.Date;
 
 import android.app.Activity;
 import android.app.Application;
-import android.os.Environment;
+import android.app.backup.BackupManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -43,7 +43,19 @@ public class UPMApplication extends Application {
 
     private PasswordDatabase passwordDatabase;
     private Date timeOfLastSync;
-    
+    private BackupManager backupManager;
+    public static final Object[] sDataLock = new Object[0];
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        backupManager = new BackupManager(this);
+    }
+
+    public BackupManager getBackupManager() {
+        return backupManager;
+    }
+
     public Date getTimeOfLastSync() {
         return timeOfLastSync;
     }
@@ -111,9 +123,9 @@ public class UPMApplication extends Application {
 
     protected void restoreDatabase(Activity activity) {
         deleteDatabase(activity);
-        File fileOnSDCard = new File(Environment.getExternalStorageDirectory(), Utilities.DEFAULT_DATABASE_FILE);
+        File backupFile = Utilities.getBackupFile(activity);
         File databaseFile = Utilities.getDatabaseFile(activity);
-        ((UPMApplication) activity.getApplication()).copyFile(fileOnSDCard, databaseFile, activity);
+        ((UPMApplication) activity.getApplication()).copyFile(backupFile, databaseFile, activity);
     }
 
     protected void deleteDatabase(Activity activity) {

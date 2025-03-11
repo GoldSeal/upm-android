@@ -27,6 +27,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.os.Environment;
 
 import com.dropbox.client2.session.AccessTokenPair;
 import com.u17od.upm.database.PasswordDatabase;
@@ -64,8 +65,12 @@ public class Utilities {
         }
     }
 
-    public static String getDatabaseFileName(Activity activity) {
-        SharedPreferences settings = activity.getSharedPreferences(Prefs.PREFS_NAME, Activity.MODE_PRIVATE);
+    public static File getBackupFile(Activity activity) {
+        return new File(activity.getExternalFilesDir(null), Utilities.DEFAULT_DATABASE_FILE);
+    }
+
+    public static String getDatabaseFileName(Context context) {
+        SharedPreferences settings = context.getSharedPreferences(Prefs.PREFS_NAME, Activity.MODE_PRIVATE);
         return settings.getString(PREFS_DB_FILE_NAME, DEFAULT_DATABASE_FILE);
     }
 
